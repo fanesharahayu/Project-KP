@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrasi - Sistem Monitoring Hafalan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="icon">📖</div>
+        <h1>Buat Akun Baru</h1>
+        <p>Pendaftaran untuk Musyrif, Santri &amp; Wali Santri</p>
+      </div>
+      <div class="alert alert-error" id="alertBox"></div>
+      <form id="registerForm">
+        <div class="field">
+          <label>Daftar sebagai</label>
+          <select id="role">
+            <option value="musyrif">Musyrif (Pengajar)</option>
+            <option value="santri">Santri (Hafiz)</option>
+            <option value="wali">Wali Santri</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nama Lengkap</label>
+          <input type="text" id="nama" placeholder="Nama lengkap" required>
+        </div>
+        <div id="santriFields">
+          <div class="field">
+            <label>NIS (Nomor Induk Santri) <span class="muted">(opsional)</span></label>
+            <input type="text" id="nis" placeholder="Contoh: 10">
+          </div>
+          <div class="field">
+            <label>Kelas/Halaqah <span class="muted">(opsional)</span></label>
+            <input type="text" id="kelas" placeholder="Contoh: X-A">
+          </div>
+        </div>
+        <div class="field hidden" id="spesialisasiField">
+          <label>Spesialisasi <span class="muted">(opsional)</span></label>
+          <input type="text" id="spesialisasi" placeholder="Contoh: Tahfidz Putra, Tahfidz Putri">
+        </div>
+        <div class="field hidden" id="relasiField">
+          <label>Hubungan dengan santri</label>
+          <input type="text" id="relasi" placeholder="Ayah / Ibu / Wali">
+        </div>
+        <div class="field hidden" id="pilihSantriField">
+          <label>Pilih Anak (Santri) <span class="muted">(pilih nama anak Anda)</span></label>
+          <select id="santri"><option value="">Pilih santri...</option></select>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="contoh@email.com" required>
+        </div>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="Pilih username" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Minimal 6 karakter" minlength="6" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+      </form>
+      <div class="auth-foot">
+        Sudah punya akun? <a href="/pages/login.html">Masuk di sini</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice" id="toastBox"></div>
+  <script src="/js/app.js"></script>
+  <script>
+    const roleSelect = document.getElementById('role');
+    const santriFields = document.getElementById('santriFields');
+    const relasiField = document.getElementById('relasiField');
+    const spesialisasiField = document.getElementById('spesialisasiField');
+    const pilihSantriField = document.getElementById('pilihSantriField');
+
+    async function loadSantriOptions() {
+      const sel = document.getElementById('santri');
+      try {
+        const list = await api.get('/api/auth/santri');
+        sel.innerHTML = '<option value="">Pilih santri...</option>' + list.map((s) =>
+          `<option value="${s.santri_id}">${s.nama}${s.kelas ? ' (' + s.kelas + ')' : ''}</option>`
+        ).join('');
+      } catch (e) {
+        sel.innerHTML = '<option value="">Gagal memuat santri</option>';
+      }
+    }
+
+    roleSelect.addEventListener('change', () => {
+      const role = roleSelect.value;
+      santriFields.classList.toggle('hidden', role !== 'santri');
+      spesialisasiField.classList.toggle('hidden', role !== 'musyrif');
+      relasiField.classList.toggle('hidden', role !== 'wali');
+      pilihSantriField.classList.toggle('hidden', role !== 'wali');
+      if (role === 'wali') loadSantriOptions();
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertBox = document.getElementById('alertBox');
+      alertBox.classList.remove('show');
+      const role = roleSelect.value;
+      try {
+        await api.post('/api/auth/register', {
+          nama: document.getElementById('nama').value.trim(),
+          role: role,
+          nis: document.getElementById('nis').value.trim(),
+          kelas: document.getElementById('kelas').value.trim(),
+          spesialisasi: document.getElementById('spesialisasi').value.trim(),
+          relasi: document.getElementById('relasi').value.trim(),
+          santri_id: document.getElementById('santri').value,
+          email: document.getElementById('email').value.trim(),
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value
+        });
+        alertBox.classList.remove('alert-error');
+        alertBox.classList.add('alert-success', 'show');
+        const messages = {
+          musyrif: 'Pendaftaran berhasil! Silakan login.',
+          santri: 'Pendaftaran berhasil! Silakan login. Admin/musyrif akan menugaskan Anda kepada musyrif.',
+          wali: 'Pendaftaran berhasil! Silakan login. Admin dapat menghubungkan Anda dengan santri.'
+        };
+        alertBox.textContent = messages[role];
+        setTimeout(() => (window.location.href = '/pages/login.html'), 2200);
+      } catch (err) {
+        alertBox.classList.add('alert-error');
+        alertBox.textContent = err.message;
+        alertBox.classList.add('show');
+      }
+    });
+  </script>
+</body>
+</html>

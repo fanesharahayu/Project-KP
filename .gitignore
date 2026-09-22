@@ -1,0 +1,10 @@
+node_modules/
+.env
+*.log
+*.db
+*.db-shm
+*.db-wal
+cookie.txt
+cookies.txt
+m.txt
+musy.txt

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riwayat Setoran - Sistem Monitoring Hafalan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="content">
+
+        <div id="statsGrid" class="grid grid-3"></div>
+
+        <div class="card mt-3">
+          <div class="card-header wrap">
+            <h3>📝 Riwayat Setoran</h3>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <input id="setoranSearch" class="btn btn-outline" placeholder="Cari santri / surah..." style="width:auto; min-width:200px;" oninput="filterSetoran()">
+              <button class="btn btn-primary" onclick="openSetoranForm(null)">➕ Tambah Riwayat Setoran</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="allSetoranTable"></table></div>
+        </div>
+      </div>
+      <footer class="app-footer">© 2026 Sistem Monitoring Hafalan - Pesantren Tahfidz</footer>
+    </div>
+  </div>
+
+  <!-- MODAL SETORAN -->
+  <div class="modal-overlay" id="modalSetoran">
+    <div class="modal">
+      <h3 id="setoranModalTitle">➕ Catat Setoran Hafalan</h3>
+      <input type="hidden" id="f_setoran_id">
+      <div class="field"><label>Santri</label><select id="f_setoran_santri"></select></div>
+      <div class="grid grid-2">
+        <div class="field"><label>Juz</label><input id="f_setoran_juz" type="number" min="1" max="30" required></div>
+        <div class="field"><label>Surah</label><input id="f_setoran_surah" placeholder="Contoh: Al-Baqarah" required></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Ayat Awal</label><input id="f_setoran_awal" type="number" min="1" value="1"></div>
+        <div class="field"><label>Ayat Akhir</label><input id="f_setoran_akhir" type="number" min="1" value="7"></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Jenis</label>
+          <select id="f_setoran_jenis">
+            <option value="hafalan_baru">Hafalan Baru</option>
+            <option value="tambahan">Tambahan</option>
+            <option value="murajaah">Murajaah</option>
+          </select>
+        </div>
+        <div class="field"><label>Nilai</label>
+          <select id="f_setoran_nilai">
+            <option value="lancar">Lancar</option>
+            <option value="cukup_lancar">Cukup Lancar</option>
+            <option value="perlu_ulang">Perlu Ulang</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Catatan <span class="muted">(opsional)</span></label><textarea id="f_setoran_catatan" rows="2"></textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalSetoran')">Batal</button>
+        <button class="btn btn-primary" onclick="saveSetoran()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice" id="toastBox"></div>
+  <script src="/js/app.js"></script>
+  <script src="/js/musyrif.js"></script>
+</body>
+</html>

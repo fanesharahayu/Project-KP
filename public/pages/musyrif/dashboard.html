@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Musyrif - Sistem Monitoring Hafalan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="content">
+        <div id="statsGrid" class="grid grid-3"></div>
+
+        <div class="grid grid-3 mt-3">
+          <div class="card">
+            <h3 class="card-title">🎯 Pencapaian vs Target</h3>
+            <div class="progress-wrap">
+              <div class="progress-label"><span>Rata-rata pencapaian juz binaan</span><span id="avgPersen">0%</span></div>
+              <div class="progress-track"><div class="progress-fill" id="avgBar" style="width:0%"></div></div>
+            </div>
+            <p class="muted" id="avgText"></p>
+          </div>
+          <div class="card">
+            <h3 class="card-title">📈 Sebaran Jenis Setoran</h3>
+            <div class="chart-box" id="jenisChartBox"></div>
+          </div>
+          <div class="card">
+            <h3 class="card-title">⭐ Evaluasi Nilai Setoran</h3>
+            <div class="chart-box" id="nilaiChartBox"></div>
+          </div>
+        </div>
+
+        <div class="card mt-3">
+          <div class="card-header">
+            <h3>📝 Setoran Terbaru</h3>
+            <a href="/pages/musyrif/riwayat-setoran.html" class="btn btn-outline btn-sm">Lihat Semua</a>
+          </div>
+          <div class="table-wrap"><table id="recentSetoranTable"></table></div>
+        </div>
+      </div>
+      <footer class="app-footer">© 2026 Sistem Monitoring Hafalan - Pesantren Tahfidz</footer>
+    </div>
+  </div>
+
+  <div class="notice" id="toastBox"></div>
+  <script src="/js/app.js"></script>
+  <script src="/js/musyrif.js"></script>
+</body>
+</html>

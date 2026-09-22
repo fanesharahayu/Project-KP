@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relasi Wali - Sistem Monitoring Hafalan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="content">
+        <div class="card">
+          <div class="card-header wrap">
+            <h3>🔗 Relasi Wali - Santri Binaan</h3>
+            <button class="btn btn-primary btn-sm" onclick="openWaliForm()">🔗 Hubungkan Wali</button>
+          </div>
+          <p class="muted mb-2">Hubungkan akun wali santri dengan santri binaan Anda agar wali dapat melihat perkembangan hafalan anaknya. Wali harus sudah daftar akun (Daftar sebagai Wali Santri) terlebih dahulu.</p>
+          <div class="table-wrap"><table id="waliTable"></table></div>
+        </div>
+      </div>
+      <footer class="app-footer">© 2026 Sistem Monitoring Hafalan - Pesantren Tahfidz</footer>
+    </div>
+  </div>
+
+  <!-- MODAL HUBUNGKAN WALI -->
+  <div class="modal-overlay" id="modalWaliLink">
+    <div class="modal">
+      <h3>🔗 Hubungkan Wali dengan Santri</h3>
+      <div class="field"><label>Santri Binaan</label><select id="f_wali_santri"></select></div>
+      <div class="field"><label>Akun Wali Santri</label><select id="f_wali_user"></select></div>
+      <div class="field"><label>Hubungan <span class="muted">(opsional)</span></label><input id="f_wali_relasi" placeholder="Ayah / Ibu / Wali" value="Wali Santri"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalWaliLink')">Batal</button>
+        <button class="btn btn-primary" onclick="saveWaliLink()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice" id="toastBox"></div>
+  <script src="/js/app.js"></script>
+  <script src="/js/musyrif.js"></script>
+</body>
+</html>

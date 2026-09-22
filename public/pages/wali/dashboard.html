@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Wali Santri - Sistem Monitoring Hafalan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="content">
+        <div class="card">
+          <div class="card-header">
+            <h3>👨‍👦 Perkembangan Hafalan Anak Anda</h3>
+            <p class="muted">Pilih anak untuk melihat detail perkembangan</p>
+          </div>
+          <div class="card-grid-list" id="childList"></div>
+        </div>
+
+        <div class="card mt-3 hidden" id="detailCard">
+          <div class="card-header between wrap">
+            <h3 id="detailTitle">Detail</h3>
+            <button class="btn btn-ghost btn-sm" onclick="hideDetail()">← Kembali</button>
+          </div>
+          <div class="grid grid-4 mt-3" id="detailStats"></div>
+
+          <div class="card mt-3">
+            <div class="progress-wrap">
+              <div class="progress-label"><span>Progres terhadap target hafalan</span><span id="dpersen">0%</span></div>
+              <div class="progress-track" style="height:16px;"><div class="progress-fill" id="dbar" style="width:0%"></div></div>
+            </div>
+            <p class="muted" id="dhint"></p>
+          </div>
+
+          <div class="card mt-3">
+            <h3 class="card-title">📈 Grafik Perkembangan Hafalan</h3>
+            <div class="chart-box" id="chartBox"></div>
+          </div>
+
+          <div class="card mt-3">
+            <h3 class="card-title">🎯 Target Hafalan</h3>
+            <div class="table-wrap"><table id="targetTable"></table></div>
+          </div>
+
+          <div class="card mt-3">
+            <h3 class="card-title">📝 Riwayat Setoran Hafalan</h3>
+            <div class="table-wrap"><table id="setoranTable"></table></div>
+          </div>
+        </div>
+      </div>
+      <footer class="app-footer">© 2026 Sistem Monitoring Hafalan - Pesantren Tahfidz</footer>
+    </div>
+  </div>
+
+  <div class="notice" id="toastBox"></div>
+  <script src="/js/app.js"></script>
+  <script src="/js/wali.js"></script>
+</body>
+</html>

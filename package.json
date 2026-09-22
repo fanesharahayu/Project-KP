@@ -1,0 +1,29 @@
+{
+  "name": "tahfidz-monitoring",
+  "version": "1.0.0",
+  "description": "Sistem monitoring hafalan Al-Qur'an untuk santri, musyrif, wali santri, dan admin",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db:init": "node scripts/init_db.js"
+  },
+  "keywords": [
+    "tahfidz",
+    "quran",
+    "hafalan",
+    "monitoring"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

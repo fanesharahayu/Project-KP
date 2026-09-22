@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - Sistem Monitoring Hafalan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+      <header class="topbar" id="topbar"></header>
+      <div class="content">
+        <div id="statsGrid" class="grid grid-4"></div>
+
+        <div class="card mt-3">
+          <div class="tab-bar">
+            <button class="active" data-tab="overview">📊 Ringkasan</button>
+            <button data-tab="santri">👥 Santri</button>
+            <button data-tab="musyrif">👤 Musyrif</button>
+            <button data-tab="wali">🔗 Wali</button>
+            <button data-tab="target">🎯 Target</button>
+            <button data-tab="users">👥 Pengguna</button>
+            <button data-tab="setoran">📝 Setoran</button>
+          </div>
+
+          <div id="tab-overview">
+            <div class="grid grid-3 mt-3">
+              <div class="card">
+                <h3 class="card-title">🎯 Pencapaian vs Target</h3>
+                <div class="progress-wrap">
+                  <div class="progress-label"><span>Rata-rata pencapaian juz</span><span id="avgPersen">0%</span></div>
+                  <div class="progress-track"><div class="progress-fill" id="avgBar" style="width:0%"></div></div>
+                </div>
+                <p class="muted" id="avgText"></p>
+              </div>
+              <div class="card">
+                <h3 class="card-title">📈 Sebaran Jenis Setoran</h3>
+                <div class="chart-box" id="jenisChartBox"></div>
+              </div>
+              <div class="card">
+                <h3 class="card-title">⭐ Evaluasi Nilai Setoran</h3>
+                <div class="chart-box" id="nilaiChartBox"></div>
+              </div>
+            </div>
+            <div class="card mt-3">
+              <h3 class="card-title">👥 Daftar Santri &amp; Progres</h3>
+              <div class="table-wrap"><table id="overviewSantriTable"></table></div>
+            </div>
+          </div>
+
+          <div id="tab-santri" class="hidden">
+            <div class="flex between wrap mb-3">
+              <h3 class="card-title">Daftar Santri</h3>
+              <button class="btn btn-primary btn-sm" onclick="openAddSantri()">➕ Tambah Santri</button>
+            </div>
+            <div class="table-wrap"><table id="santriTable"></table></div>
+          </div>
+
+          <div id="tab-musyrif" class="hidden">
+            <div class="flex between wrap mb-3">
+              <h3 class="card-title">Daftar Musyrif</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modalMusyrif')">➕ Tambah Musyrif</button>
+            </div>
+            <div class="table-wrap"><table id="musyrifTable"></table></div>
+          </div>
+
+          <div id="tab-wali" class="hidden">
+            <div class="flex between wrap mb-3">
+              <h3 class="card-title">Relasi Wali - Santri</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modalWaliLink')">🔗 Hubungkan</button>
+            </div>
+            <div class="table-wrap"><table id="waliTable"></table></div>
+          </div>
+
+          <div id="tab-target" class="hidden">
+            <div class="flex between wrap mb-3">
+              <h3 class="card-title">Target Hafalan</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modalTarget')">🎯 Buat Target</button>
+            </div>
+            <div class="table-wrap"><table id="targetTable"></table></div>
+          </div>
+
+          <div id="tab-users" class="hidden">
+            <div class="flex between wrap mb-3">
+              <h3 class="card-title">Semua Pengguna</h3>
+              <button class="btn btn-primary btn-sm" onclick="openModal('modalUser')">➕ Tambah Pengguna</button>
+            </div>
+            <div class="table-wrap"><table id="userTable"></table></div>
+          </div>
+
+          <div id="tab-setoran" class="hidden">
+            <div class="flex between wrap mb-3">
+              <h3 class="card-title">Riwayat Setoran</h3>
+              <button class="btn btn-primary btn-sm" onclick="openAdminSetoranForm(null)">➕ Tambah Setoran</button>
+            </div>
+            <div class="table-wrap"><table id="setoranTable"></table></div>
+          </div>
+        </div>
+      </div>
+      <footer class="app-footer">© 2026 Sistem Monitoring Hafalan - Pesantren Tahfidz</footer>
+    </div>
+  </div>
+
+  <!-- MODAL: SANTRI -->
+  <div class="modal-overlay" id="modalSantri">
+    <div class="modal">
+      <h3 id="santriModalTitle">➕ Tambah Santri</h3>
+      <input type="hidden" id="f_santri_id">
+      <div class="field"><label>Nama Lengkap</label><input id="f_santri_nama" required></div>
+      <div class="field"><label>Username</label><input id="f_santri_user" required></div>
+      <div class="field"><label>Email</label><input id="f_santri_email" type="email" required></div>
+      <div class="field" id="fsantri_pass_field"><label>Password</label><input id="f_santri_pass" type="password"></div>
+      <div class="grid grid-2">
+        <div class="field"><label>NIS</label><input id="f_santri_nis"></div>
+        <div class="field"><label>Kelas</label><input id="f_santri_kelas"></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Target Juz</label><input id="f_santri_target" type="number" value="30" min="1" max="30"></div>
+        <div class="field"><label>Tanggal Bergabung</label><input id="f_santri_tgl" type="date"></div>
+      </div>
+      <div class="field"><label>Musyrif</label><select id="f_santri_musyrif"></select></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalSantri')">Batal</button>
+        <button class="btn btn-primary" onclick="saveSantri()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MUSYRIF -->
+  <div class="modal-overlay" id="modalMusyrif">
+    <div class="modal">
+      <h3>➕ Tambah Musyrif</h3>
+      <div class="field"><label>Nama Lengkap</label><input id="f_musyrif_nama" required></div>
+      <div class="field"><label>Username</label><input id="f_musyrif_user" required></div>
+      <div class="field"><label>Email</label><input id="f_musyrif_email" type="email" required></div>
+      <div class="field"><label>Password</label><input id="f_musyrif_pass" type="password" required></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalMusyrif')">Batal</button>
+        <button class="btn btn-primary" onclick="saveMusyrif()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: USER -->
+  <div class="modal-overlay" id="modalUser">
+    <div class="modal">
+      <h3>➕ Tambah Pengguna</h3>
+      <div class="field"><label>Nama Lengkap</label><input id="f_user_nama" required></div>
+      <div class="field"><label>Username</label><input id="f_user_username" required></div>
+      <div class="field"><label>Email</label><input id="f_user_email" type="email" required></div>
+      <div class="field"><label>Password</label><input id="f_user_pass" type="password" required></div>
+      <div class="field"><label>Role</label>
+        <select id="f_user_role">
+          <option value="musyrif">Musyrif</option>
+          <option value="wali">Wali Santri</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalUser')">Batal</button>
+        <button class="btn btn-primary" onclick="saveUser()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: WALI LINK -->
+  <div class="modal-overlay" id="modalWaliLink">
+    <div class="modal">
+      <h3>🔗 Hubungkan Wali dengan Santri</h3>
+      <div class="field"><label>Wali</label><select id="f_wali_user"></select></div>
+      <div class="field"><label>Santri</label><select id="f_wali_santri"></select></div>
+      <div class="field"><label>Relasi</label><input id="f_wali_relasi" placeholder="Ayah / Ibu / Wali"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalWaliLink')">Batal</button>
+        <button class="btn btn-primary" onclick="saveWaliLink()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: TARGET -->
+  <div class="modal-overlay" id="modalTarget">
+    <div class="modal">
+      <h3>🎯 Buat Target Hafalan</h3>
+      <div class="field"><label>Santri</label><select id="f_target_santri"></select></div>
+      <div class="field"><label>Target Juz (periode ini)</label><input id="f_target_juz" type="number" value="1" min="1" max="30"></div>
+      <div class="field"><label>Periode <span class="muted">(opsional)</span></label><input id="f_target_periode" placeholder="Contoh: 2025-2026 Semester Ganjil"></div>
+      <div class="grid grid-2">
+        <div class="field"><label>Mulai</label><input id="f_target_mulai" type="date"></div>
+        <div class="field"><label>Selesai</label><input id="f_target_selesai" type="date"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalTarget')">Batal</button>
+        <button class="btn btn-primary" onclick="saveTarget()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SETORAN (admin) -->
+  <div class="modal-overlay" id="modalAdminSetoran">
+    <div class="modal">
+      <h3 id="adminSetoranTitle">➕ Tambah Setoran</h3>
+      <input type="hidden" id="adf_setoran_id">
+      <div class="field"><label>Santri</label><select id="adf_santri"></select></div>
+      <div class="field"><label>Musyrif yang menilai</label><select id="adf_musyrif"></select></div>
+      <div class="grid grid-2">
+        <div class="field"><label>Juz</label><input id="adf_juz" type="number" min="1" max="30" required></div>
+        <div class="field"><label>Surah</label><input id="adf_surah" placeholder="Contoh: Al-Baqarah" required></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Ayat Awal</label><input id="adf_awal" type="number" min="1" value="1"></div>
+        <div class="field"><label>Ayat Akhir</label><input id="adf_akhir" type="number" min="1" value="7"></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>Jenis</label>
+          <select id="adf_jenis">
+            <option value="hafalan_baru">Hafalan Baru</option>
+            <option value="tambahan">Tambahan</option>
+            <option value="murajaah">Murajaah</option>
+          </select>
+        </div>
+        <div class="field"><label>Nilai</label>
+          <select id="adf_nilai">
+            <option value="lancar">Lancar</option>
+            <option value="cukup_lancar">Cukup Lancar</option>
+            <option value="perlu_ulang">Perlu Ulang</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Catatan <span class="muted">(opsional)</span></label><textarea id="adf_catatan" rows="2"></textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('modalAdminSetoran')">Batal</button>
+        <button class="btn btn-primary" onclick="saveAdminSetoran()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice" id="toastBox"></div>
+  <script src="/js/app.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

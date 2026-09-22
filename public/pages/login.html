@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Sistem Monitoring Hafalan</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="icon">📖</div>
+        <h1>Tahfidz Monitor</h1>
+        <p>Sistem Monitoring Hafalan Al-Qur'an</p>
+      </div>
+      <div class="alert alert-error" id="alertBox"></div>
+      <form id="loginForm">
+        <div class="field">
+          <label>Username / Email</label>
+          <input type="text" id="username" placeholder="Masukkan username atau email" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+      </form>
+      <div class="auth-foot">
+        Belum punya akun? <a href="/pages/register.html">Daftar sebagai Musyrif / Santri / Wali</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice" id="toastBox"></div>
+  <script src="/js/app.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertBox = document.getElementById('alertBox');
+      alertBox.classList.remove('show');
+      try {
+        const data = await api.post('/api/auth/login', {
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value
+        });
+        window.location.href = data.redirect;
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.classList.add('show');
+      }
+    });
+  </script>
+</body>
+</html>
