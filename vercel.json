@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/index.js": {
-      "includeFiles": ["public/**", "node_modules/sqlite3/**"]
+      "includeFiles": ["public/**", "node_modules/better-sqlite3/**"]
     }
   },
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }]

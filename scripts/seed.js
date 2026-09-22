@@ -4,7 +4,7 @@
 //                     karena /tmp kosong setiap cold start)
 //  - scripts/init_db.js -> CLI `npm run db:init` untuk hosting Node.js / VPS
 const bcrypt = require('bcryptjs');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -72,31 +72,17 @@ const SCHEMA = [
   )`
 ];
 
-function run(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve({ lastID: this.lastID, changes: this.changes });
-    });
-  });
+async function run(db, sql, params = []) {
+  const info = db.prepare(sql).run(...params);
+  return { lastID: Number(info.lastInsertRowid), changes: info.changes };
 }
 
-function get(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) return reject(err);
-      resolve(row);
-    });
-  });
+async function get(db, sql, params = []) {
+  return db.prepare(sql).get(...params);
 }
 
-function all(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows || []);
-    });
-  });
+async function all(db, sql, params = []) {
+  return db.prepare(sql).all(...params) || [];
 }
 
 async function ensureSchema(db) {
@@ -200,20 +186,19 @@ async function seedIfEmpty(db) {
 // Dipakai server (config/db.js): siapkan koneksi yang sudah terbuka.
 // Idempoten: aman dipanggil tiap cold start.
 async function ensureSeeded(db) {
-  await run(db, 'PRAGMA journal_mode = WAL');
-  await run(db, 'PRAGMA foreign_keys = ON');
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
   await ensureSchema(db);
   return seedIfEmpty(db);
 }
 
 // Dipakai CLI (scripts/init_db.js): buka DB dari path, siapkan, tutup.
 async function initDatabase(dbPath) {
-  const db = new sqlite3.Database(dbPath);
+  const db = new Database(dbPath);
   try {
-    const seeded = await ensureSeeded(db);
-    return seeded;
+    return await ensureSeeded(db);
   } finally {
-    await new Promise((resolve) => db.close(() => resolve()));
+    db.close();
   }
 }
 

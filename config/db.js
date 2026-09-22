@@ -1,5 +1,5 @@
 require('dotenv').config();
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 const { ensureSeeded } = require('../scripts/seed');
 
@@ -13,7 +13,7 @@ function resolveDbPath() {
 }
 
 const dbPath = resolveDbPath();
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
 // Dijalankan sekali; query() menunggu ini selesai dulu.
 // Idempoten: jika tabel/data sudah ada, tidak diapa-apakan.
@@ -21,34 +21,26 @@ const ready = ensureSeeded(db).catch((e) => {
   console.error('Gagal inisialisasi database:', e.message);
 });
 
-function query(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    ready.then(() => {
-      const trimmed = sql.trim().toUpperCase();
-      if (trimmed.startsWith('INSERT')) {
-        db.run(sql, params, function (err) {
-          if (err) return reject(err);
-          resolve([{ insertId: this.lastID, lastID: this.lastID, affectedRows: this.changes }, []]);
-        });
-      } else if (trimmed.startsWith('UPDATE') || trimmed.startsWith('DELETE')) {
-        db.run(sql, params, function (err) {
-          if (err) return reject(err);
-          resolve([{ affectedRows: this.changes }, []]);
-        });
-      } else {
-        db.all(sql, params, (err, rows) => {
-          if (err) return reject(err);
-          resolve([rows || [], []]);
-        });
-      }
-    }, reject);
-  });
+// Kontrak sama seperti sebelumnya: resolve [rows|info, []] ala mysql2,
+// agar routes tidak perlu diubah.
+async function query(sql, params = []) {
+  await ready;
+  const trimmed = sql.trim().toUpperCase();
+  if (trimmed.startsWith('INSERT')) {
+    const info = db.prepare(sql).run(...params);
+    const lastID = Number(info.lastInsertRowid);
+    return [{ insertId: lastID, lastID, affectedRows: info.changes }, []];
+  }
+  if (trimmed.startsWith('UPDATE') || trimmed.startsWith('DELETE')) {
+    const info = db.prepare(sql).run(...params);
+    return [{ affectedRows: info.changes }, []];
+  }
+  const rows = db.prepare(sql).all(...params);
+  return [rows || [], []];
 }
 
 function close() {
-  return new Promise((resolve, reject) => {
-    db.close((err) => (err ? reject(err) : resolve()));
-  });
+  return Promise.resolve().then(() => db.close());
 }
 
 module.exports = { query, close, _raw: db };
