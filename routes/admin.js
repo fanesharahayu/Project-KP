@@ -83,6 +83,8 @@ router.post('/users', async (req, res) => {
     );
     if (role === 'musyrif') {
       await pool.query('INSERT INTO musyrif (user_id) VALUES (?)', [result.lastID]);
+    } else if (role === 'santri') {
+      await pool.query('INSERT INTO santri (user_id) VALUES (?)', [result.lastID]);
     }
     res.status(201).json({ message: 'User berhasil dibuat', id: result.lastID });
   } catch (e) {

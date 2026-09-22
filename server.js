@@ -48,6 +48,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Terjadi kesalahan pada server' });
 });
 
+// Diekspor agar bisa dipakai sebagai Vercel Serverless Function (lihat api/index.js).
+// Server hanya listen saat file dijalankan langsung (hosting Node.js / VPS),
+// bukan saat di-require oleh function Vercel.
+module.exports = app;
+
+if (require.main === module) {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Sistem monitoring tahfidz berjalan di http://localhost:${PORT}`);
   console.log('Dapat diakses dari perangkat lain di jaringan:');
@@ -63,3 +69,4 @@ app.listen(PORT, '0.0.0.0', () => {
     ips.forEach((ip) => console.log(`  http://${ip}:${PORT}`));
   } catch (e) { /* ignore */ }
 });
+}
