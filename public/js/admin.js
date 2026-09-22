@@ -1,9 +1,15 @@
 let DATA = null;
 
 async function load() {
-  guard('admin');
-  showSkeleton();
-  DATA = await api.get('/api/admin/stats');
+  try {
+    await guard('admin');
+    showSkeleton();
+    DATA = await api.get('/api/admin/stats');
+  } catch (e) {
+    document.getElementById('statsGrid').innerHTML =
+      `<div class="card"><p class="muted">Gagal memuat data: ${escapeHtml(e.message)}</p></div>`;
+    return;
+  }
   renderStats();
   renderOverview();
   renderSantri();
@@ -90,9 +96,7 @@ function renderOverview() {
   });
 
   loadChartJs(() => {
-    document.getElementById('jenisChartBox').innerHTML = '<canvas></canvas>';
-    document.getElementById('nilaiChartBox').innerHTML = '<canvas></canvas>';
-    new Chart(document.querySelector('#jenisChartBox canvas'), {
+    makeChart('jenisChartBox', {
       type: 'doughnut',
       data: {
         labels: ['Hafalan Baru', 'Tambahan', 'Murajaah'],
@@ -100,7 +104,7 @@ function renderOverview() {
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
-    new Chart(document.querySelector('#nilaiChartBox canvas'), {
+    makeChart('nilaiChartBox', {
       type: 'doughnut',
       data: {
         labels: ['Lancar', 'Cukup Lancar', 'Perlu Ulang'],
@@ -142,7 +146,7 @@ function renderSantri() {
         <td>
           <div class="row-actions">
             <button title="Edit" onclick="editSantri(${s.id})">✏️</button>
-            <button title="Hapus" onclick="confirmDeleteSantri(${s.id}, '${escapeHtml(s.nama)}')">🗑️</button>
+            <button title="Hapus" onclick="confirmDeleteSantri(${s.id})">🗑️</button>
           </div>
         </td>
       </tr>`).join('') || `<tr><td colspan="6" class="empty">Belum ada santri</td></tr>`}</tbody>`;
@@ -227,9 +231,10 @@ async function saveSantri() {
   } catch (e) { toast(e.message, false); }
 }
 
-function confirmDeleteSantri(id, nama) {
+function confirmDeleteSantri(id) {
   const s = DATA.santri.find((x) => x.id === id);
-  if (!confirm(`Hapus santri ${nama}? Semua data hafalan ikut terhapus.`)) return;
+  if (!s) return;
+  if (!confirm(`Hapus santri ${s.nama}? Semua data hafalan ikut terhapus.`)) return;
   api.del('/api/admin/users/' + s.user_id).then(async () => {
     toast('Santri dihapus');
     await load();
@@ -251,7 +256,7 @@ function renderMusyrif() {
         <td>${escapeHtml(u.username)}</td>
         <td>${escapeHtml(u.email)}</td>
         <td>${counts[u.id] || 0} santri</td>
-        <td><div class="row-actions"><button title="Hapus" onclick="confirmDeleteUser(${u.id}, '${escapeHtml(u.nama)}')">🗑️</button></div></td>
+        <td><div class="row-actions"><button title="Hapus" onclick="confirmDeleteUser(${u.id})">🗑️</button></div></td>
       </tr>`).join('') || `<tr><td colspan="5" class="empty">Belum ada musyrif</td></tr>`}</tbody>`;
 }
 
@@ -283,7 +288,7 @@ function renderUsers() {
         <td><span class="role-pill ${roles[u.role]}">${ROLE_NAMES[u.role] || u.role}</span></td>
         <td>
           <div class="row-actions">
-            <button title="Hapus" onclick="confirmDeleteUser(${u.id}, '${escapeHtml(u.nama)}')">🗑️</button>
+            <button title="Hapus" onclick="confirmDeleteUser(${u.id})">🗑️</button>
           </div>
         </td>
       </tr>`).join('')}</tbody>`;
@@ -304,8 +309,11 @@ async function saveUser() {
   } catch (e) { toast(e.message, false); }
 }
 
-function confirmDeleteUser(id, nama) {
-  if (!confirm(`Hapus pengguna ${nama}?`)) return;
+function confirmDeleteUser(id) {
+  const u = DATA.users.find((x) => x.id === id);
+  if (!u) return;
+  if (u.role === 'santri') return confirmDeleteSantri(DATA.santri.find((x) => x.user_id === id)?.id);
+  if (!confirm(`Hapus pengguna ${u.nama}?`)) return;
   api.del('/api/admin/users/' + id).then(async () => {
     toast('Pengguna dihapus');
     await load();

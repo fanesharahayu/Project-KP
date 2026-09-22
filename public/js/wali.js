@@ -1,9 +1,14 @@
 let childrenData = [];
 
 async function load() {
-  await guard('wali');
-  document.getElementById('page-title').textContent = 'Dashboard Wali Santri';
-  childrenData = await api.get('/api/wali/children');
+  try {
+    await guard('wali');
+    document.getElementById('page-title').textContent = 'Dashboard Wali Santri';
+    childrenData = await api.get('/api/wali/children');
+  } catch (e) {
+    if (e.message && !/login/i.test(e.message)) toast('Gagal memuat data: ' + e.message, false);
+    return; // guard sudah redirect ke login bila sesi invalid
+  }
   renderChildren();
 }
 
@@ -50,8 +55,7 @@ async function openChildDetail(santriId) {
     : `Musyrif: ${s.musyrif_nama || '-'}. Total ${data.progress.juzTercapai} juz sudah terhafal dari target ${data.progress.targetJuz} juz.`;
 
   loadChartJs(() => {
-    document.getElementById('chartBox').innerHTML = '<canvas></canvas>';
-    new Chart(document.querySelector('#chartBox canvas'), {
+    makeChart('chartBox', {
       type: 'line',
       data: {
         labels: data.grafik.map((g) => g.tanggal),

@@ -184,7 +184,11 @@ window.addEventListener('hashchange', activateTabFromHash);
 
 async function doLogout(e) {
   if (e) e.preventDefault();
-  await api.post('/api/auth/logout');
+  try {
+    await api.post('/api/auth/logout');
+  } catch (err) {
+    console.error('Logout gagal:', err.message);
+  }
   window.location.href = '/pages/login.html';
 }
 
@@ -200,12 +204,14 @@ function toast(msg, ok = true) {
   setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add('show'); }
+function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('show'); }
 
 function fmtDate(d) {
   if (!d) return '-';
-  const date = new Date(d);
+  // Format SQLite 'YYYY-MM-DD HH:MM:SS' tidak dipahami Safari -> ubah ke ISO 'T'
+  const date = new Date(String(d).replace(' ', 'T'));
+  if (isNaN(date.getTime())) return String(d).slice(0, 10);
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -217,4 +223,19 @@ function loadChartJs(cb) {
   s.onload = cb;
   s.onerror = () => console.error('Gagal memuat Chart.js');
   document.head.appendChild(s);
+}
+
+// Buat chart sambil menghancurkan chart lama di box yang sama,
+// agar tidak bocor memori / error "canvas already in use"
+// saat halaman di-render ulang (load/refresh).
+const __charts = {};
+function makeChart(boxId, config) {
+  const box = document.getElementById(boxId);
+  if (!box || typeof Chart === 'undefined') return;
+  if (__charts[boxId]) {
+    try { __charts[boxId].destroy(); } catch (e) { /* abaikan */ }
+    delete __charts[boxId];
+  }
+  box.innerHTML = '<canvas></canvas>';
+  __charts[boxId] = new Chart(box.querySelector('canvas'), config);
 }

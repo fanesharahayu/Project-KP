@@ -7,7 +7,11 @@ let setoranFilter = '';
 function has(el) { return !!document.getElementById(el); }
 
 async function load() {
-  guard('musyrif');
+  try {
+    await guard('musyrif');
+  } catch (e) {
+    return; // guard sudah redirect ke login
+  }
   const titleEl = document.getElementById('page-title');
   if (titleEl) {
     if (has('santriList')) titleEl.textContent = 'Santri Binaan';
@@ -16,10 +20,20 @@ async function load() {
     else if (has('waliTable')) titleEl.textContent = 'Relasi Wali';
     else titleEl.textContent = 'Dashboard Musyrif';
   }
-  SANTRIS = await api.get('/api/musyrif/santri');
+  try {
+    SANTRIS = await api.get('/api/musyrif/santri');
+  } catch (e) {
+    toast('Gagal memuat data: ' + e.message, false);
+    return;
+  }
   if (has('targetListTable')) { await loadTargets(); return; }
   if (has('waliTable')) { await loadWaliLinks(); return; }
-  ALLSETORAN = await api.get('/api/musyrif/setoran');
+  try {
+    ALLSETORAN = await api.get('/api/musyrif/setoran');
+  } catch (e) {
+    toast('Gagal memuat riwayat setoran: ' + e.message, false);
+    ALLSETORAN = [];
+  }
   if (has('f_santri_add_mode')) {
     document.getElementById('f_santri_add_mode').addEventListener('change', toggleAddMode);
   }
@@ -109,9 +123,7 @@ function renderCharts() {
   });
 
   loadChartJs(() => {
-    document.getElementById('jenisChartBox').innerHTML = '<canvas></canvas>';
-    document.getElementById('nilaiChartBox').innerHTML = '<canvas></canvas>';
-    new Chart(document.querySelector('#jenisChartBox canvas'), {
+    makeChart('jenisChartBox', {
       type: 'doughnut',
       data: {
         labels: ['Hafalan Baru', 'Tambahan', 'Murajaah'],
@@ -119,7 +131,7 @@ function renderCharts() {
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
-    new Chart(document.querySelector('#nilaiChartBox canvas'), {
+    makeChart('nilaiChartBox', {
       type: 'doughnut',
       data: {
         labels: ['Lancar', 'Cukup Lancar', 'Perlu Ulang'],
@@ -201,8 +213,7 @@ async function openDetail(santriId) {
 
   // grafik
   loadChartJs(() => {
-    document.getElementById('chartBox').innerHTML = '<canvas></canvas>';
-    new Chart(document.querySelector('#chartBox canvas'), {
+    makeChart('chartBox', {
       type: 'line',
       data: {
         labels: data.grafik.map((g) => g.tanggal),

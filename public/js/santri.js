@@ -1,6 +1,12 @@
 async function load() {
-  guard('santri');
-  const data = await api.get('/api/santri/dashboard');
+  let data;
+  try {
+    await guard('santri');
+    data = await api.get('/api/santri/dashboard');
+  } catch (e) {
+    if (e.message && !/login/i.test(e.message)) toast('Gagal memuat data: ' + e.message, false);
+    return; // guard sudah redirect ke login bila sesi invalid
+  }
   const s = data.santri;
   document.getElementById('page-title').textContent = 'Dashboard Santri';
 
@@ -26,8 +32,7 @@ async function load() {
 
   // grafik
   loadChartJs(() => {
-    document.getElementById('chartBox').innerHTML = '<canvas></canvas>';
-    new Chart(document.querySelector('#chartBox canvas'), {
+    makeChart('chartBox', {
       type: 'line',
       data: {
         labels: data.grafik.map((g) => g.tanggal),
