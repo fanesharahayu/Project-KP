@@ -36,6 +36,27 @@
             <a href="#" onclick="doLogout(event)" class="btn btn-danger btn-block" style="width:100%;">⏻ Keluar dari Aplikasi</a>
           </div>
         </div>
+
+        <div class="card" style="max-width:560px; margin:24px auto 0;">
+          <h3 style="margin-bottom:4px;">🔑 Ganti Password</h3>
+          <p class="muted" style="margin-bottom:16px;">Login pertama pakai password sementara dari admin (dikirim via WA), lalu ganti di sini.</p>
+          <div class="alert alert-error" id="passAlert" style="display:none;"></div>
+          <form id="passForm">
+            <div class="field">
+              <label>Password lama (sementara dari admin)</label>
+              <input type="password" id="oldPassword" autocomplete="current-password" required>
+            </div>
+            <div class="field">
+              <label>Password baru (min. 6 karakter)</label>
+              <input type="password" id="newPassword" minlength="6" autocomplete="new-password" required>
+            </div>
+            <div class="field">
+              <label>Ulangi password baru</label>
+              <input type="password" id="confirmPassword" minlength="6" autocomplete="new-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Simpan Password Baru</button>
+          </form>
+        </div>
       </div>
       <footer class="app-footer">© 2026 Sistem Monitoring Hafalan - Pesantren Tahfidz</footer>
     </div>

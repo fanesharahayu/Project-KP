@@ -21,9 +21,34 @@ async function load() {
     document.getElementById('pKelas').textContent = u.kelas || '-';
     document.getElementById('pMusyrif').textContent = u.musyrif_nama || 'Belum ditugaskan';
     document.getElementById('pTarget').textContent = (u.target_juz ? u.target_juz + ' juz' : '-');
-  } else if (u.role === 'musyrif') {
+  } else   if (u.role === 'musyrif') {
     document.getElementById('rowSpesialisasi').classList.remove('hidden');
     document.getElementById('pSpesialisasi').textContent = u.spesialisasi || '-';
+  }
+
+  const passForm = document.getElementById('passForm');
+  if (passForm) {
+    passForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertBox = document.getElementById('passAlert');
+      alertBox.style.display = 'none';
+      const oldPassword = document.getElementById('oldPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      if (newPassword !== confirm) {
+        alertBox.textContent = 'Ulangi password tidak sama';
+        alertBox.style.display = 'block';
+        return;
+      }
+      try {
+        await api.post('/api/auth/change-password', { oldPassword, newPassword });
+        toast('Password berhasil diganti');
+        passForm.reset();
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.style.display = 'block';
+      }
+    });
   }
 }
 

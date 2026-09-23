@@ -51,8 +51,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /api/auth/santri - daftar santri untuk form registrasi wali
-router.get('/santri', async (req, res) => {
+// GET /api/auth/santri - daftar santri (butuh login; dulu untuk form registrasi wali publik)
+router.get('/santri', requireAuth, async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT s.id AS santri_id, u.nama, s.nis, s.kelas
@@ -66,56 +66,30 @@ router.get('/santri', async (req, res) => {
   }
 });
 
-// POST /api/auth/register - pendaftaran santri & wali
-router.post('/register', async (req, res) => {
+// POST /api/auth/register - DINONAKTIFKAN. Akun hanya dibuat admin
+// via POST /api/admin/santri, POST /api/admin/users, POST /api/admin/wali-link.
+router.post('/register', (req, res) => {
+  return res.status(403).json({ error: 'Registrasi mandiri dinonaktifkan. Hubungi admin untuk dibuatkan akun.' });
+});
+
+// POST /api/auth/change-password - ganti password sendiri (harus login)
+// Alur: admin buat akun + password sementara (kirim via WA) -> user login -> ganti di sini.
+router.post('/change-password', requireAuth, async (req, res) => {
   try {
-    const { nama, username, email, password, role, nis, kelas, spesialisasi, relasi, santri_id } = req.body;
-    if (!nama || !username || !email || !password) {
-      return res.status(400).json({ error: 'Semua field wajib diisi' });
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Password lama dan baru wajib diisi' });
     }
-    const validRoles = ['musyrif', 'santri', 'wali'];
-    const userRole = validRoles.includes(role) ? role : 'santri';
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password minimal 6 karakter' });
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password baru minimal 6 karakter' });
     }
-
-    const [exists] = await pool.query(
-      'SELECT id FROM users WHERE username = ? OR email = ?',
-      [username, email]
-    );
-    if (exists.length > 0) {
-      return res.status(400).json({ error: 'Username atau email sudah terdaftar' });
+    const [rows] = await pool.query('SELECT password FROM users WHERE id = ?', [req.session.user.id]);
+    if (!rows[0] || !bcrypt.compareSync(oldPassword, rows[0].password)) {
+      return res.status(401).json({ error: 'Password lama salah' });
     }
-
-    const hash = bcrypt.hashSync(password, 10);
-    const [result] = await pool.query(
-      'INSERT INTO users (username, email, password, nama, role) VALUES (?, ?, ?, ?, ?)',
-      [username, email, hash, nama, userRole]
-    );
-    const userId = result.lastID;
-
-    if (userRole === 'santri') {
-      await pool.query(
-        'INSERT INTO santri (user_id, musyrif_id, nis, kelas) VALUES (?, ?, ?, ?)',
-        [userId, null, nis || null, kelas || null]
-      );
-    } else if (userRole === 'musyrif') {
-      await pool.query(
-        'INSERT INTO musyrif (user_id, spesialisasi) VALUES (?, ?)',
-        [userId, spesialisasi || null]
-      );
-    } else if (userRole === 'wali' && santri_id) {
-      await pool.query(
-        'INSERT INTO wali_santri (wali_user_id, santri_id, relasi) VALUES (?, ?, ?)',
-        [userId, santri_id, relasi || 'Wali Santri']
-      );
-    }
-
-    res.status(201).json({
-      message: 'Registrasi berhasil. Silakan login.',
-      userId,
-      redirect: '/pages/login.html'
-    });
+    const hash = bcrypt.hashSync(newPassword, 10);
+    await pool.query('UPDATE users SET password = ? WHERE id = ?', [hash, req.session.user.id]);
+    res.json({ message: 'Password berhasil diganti' });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
